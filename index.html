@@ -529,6 +529,41 @@
             letter-spacing: 3px;
             margin-top: 2px;
         }
+
+        /* Mobile Optimization */
+        @media (max-width: 768px) {
+            body {
+                padding: 10px;
+            }
+            .container {
+                padding: 15px;
+            }
+            .layout-grid, .layout-row, .layout-cell {
+                display: block;
+                width: 100% !important;
+            }
+            .left-panel {
+                border-right: none;
+                border-bottom: 1px solid #404040;
+                padding-bottom: 25px;
+                margin-bottom: 20px;
+            }
+            .right-panel {
+                padding-top: 10px;
+            }
+            .ticket-card {
+                aspect-ratio: auto;
+                min-height: 380px;
+            }
+            .ticket-body {
+                margin-top: 20px;
+                padding: 12px 15px;
+            }
+            .modal-content {
+                margin: 10% auto;
+                padding: 15px;
+            }
+        }
     </style>
 </head>
 <body>
