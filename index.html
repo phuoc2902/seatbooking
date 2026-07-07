@@ -563,6 +563,24 @@
                 margin: 10% auto;
                 padding: 15px;
             }
+            /* Cấu hình kích thước ghế tối ưu chạm trên điện thoại */
+            .seat {
+                width: 22px;
+                height: 22px;
+                margin: 0 2px;
+                font-size: 8px;
+                line-height: 20px;
+            }
+            .seat.couple {
+                width: 48px;
+            }
+            .row-label {
+                width: 20px;
+                font-size: 11px;
+            }
+            .seating-map {
+                min-width: unset !important;
+            }
         }
     </style>
 </head>
@@ -858,36 +876,9 @@
     window.addEventListener('mouseup', () => {
         isMouseDown = false;
     });
-
-    function scaleSeatingMap() {
-        const wrapper = document.querySelector('.seating-map-wrapper');
-        const map = document.getElementById('seatingMap');
-        if (!wrapper || !map) return;
-        
-        // Reset styles first to get natural width
-        map.style.transform = 'none';
-        map.style.width = 'auto';
-        wrapper.style.height = 'auto';
-        
-        const wrapperWidth = wrapper.clientWidth;
-        const mapWidth = map.scrollWidth;
-        
-        if (window.innerWidth <= 768 && mapWidth > wrapperWidth) {
-            const scale = wrapperWidth / mapWidth;
-            map.style.transform = `scale(${scale})`;
-            map.style.transformOrigin = 'top center';
-            
-            // Adjust wrapper height to prevent excessive space below the scaled map
-            const mapHeight = map.offsetHeight;
-            wrapper.style.height = (mapHeight * scale) + 'px';
-            wrapper.style.overflowX = 'hidden'; // Khóa cuộn ngang
-        } else {
-            wrapper.style.overflowX = 'auto';
-        }
-    }
-
-    // Call scaleSeatingMap on window resize
-    window.addEventListener('resize', scaleSeatingMap);
+    window.addEventListener('touchend', () => {
+        isMouseDown = false;
+    });
 
     function initMap() {
         const screenKey = document.getElementById('screenSelect').value;
@@ -993,7 +984,7 @@
                     }
                 };
 
-                // Hỗ trợ chọn/kéo chạm trên di động (Mobile Touch Drag)
+                // Hỗ trợ chọn chạm trên di động (Mobile Touch Tap & Drag)
                 seat.addEventListener('touchstart', function(e) {
                     e.preventDefault(); // Khóa cuộn trang khi đang kéo chọn ghế
                     isMouseDown = true;
@@ -1048,14 +1039,7 @@
             }
         }, { passive: false });
 
-        mapContainer.addEventListener('touchend', function() {
-            isMouseDown = false;
-        });
-
         updatePrice();
-        
-        // Tự động scale vừa màn hình di động sau khi render
-        setTimeout(scaleSeatingMap, 50);
     }
 
     function calculateBasePrice(day, slot, type) {
