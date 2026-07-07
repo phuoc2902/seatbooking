@@ -667,15 +667,10 @@
             <!-- Sơ đồ ghế ngồi -->
             <div class="layout-cell right-panel">
                 <h2 id="currentScreenTitle">MÀN HÌNH CHIẾU</h2>
-                <div class="screen-container">
-                    <div id="exitLeft" class="exit-indicator exit-left" style="display:none;">EXIT</div>
-                    <div class="screen">MÀN HÌNH</div>
-                    <div id="exitRight" class="exit-indicator exit-right" style="display:none;">EXIT</div>
-                </div>
                 
                 <div class="seating-map-wrapper">
                     <div class="seating-map" id="seatingMap">
-                        <!-- Ghế được sinh tự động bằng JavaScript -->
+                        <!-- Ghế và màn hình được sinh tự động bằng JavaScript -->
                     </div>
                 </div>
                 
@@ -864,6 +859,36 @@
         isMouseDown = false;
     });
 
+    function scaleSeatingMap() {
+        const wrapper = document.querySelector('.seating-map-wrapper');
+        const map = document.getElementById('seatingMap');
+        if (!wrapper || !map) return;
+        
+        // Reset styles first to get natural width
+        map.style.transform = 'none';
+        map.style.width = 'auto';
+        wrapper.style.height = 'auto';
+        
+        const wrapperWidth = wrapper.clientWidth;
+        const mapWidth = map.scrollWidth;
+        
+        if (window.innerWidth <= 768 && mapWidth > wrapperWidth) {
+            const scale = wrapperWidth / mapWidth;
+            map.style.transform = `scale(${scale})`;
+            map.style.transformOrigin = 'top center';
+            
+            // Adjust wrapper height to prevent excessive space below the scaled map
+            const mapHeight = map.offsetHeight;
+            wrapper.style.height = (mapHeight * scale) + 'px';
+            wrapper.style.overflowX = 'hidden'; // Khóa cuộn ngang
+        } else {
+            wrapper.style.overflowX = 'auto';
+        }
+    }
+
+    // Call scaleSeatingMap on window resize
+    window.addEventListener('resize', scaleSeatingMap);
+
     function initMap() {
         const screenKey = document.getElementById('screenSelect').value;
         const currentScreen = screenData[screenKey];
@@ -871,14 +896,38 @@
         // Reset danh sách ghế đang chọn khi đổi rạp
         selectedSeats.clear();
         
-        // Cập nhật tiêu đề và biển báo EXIT tương ứng rạp
+        // Cập nhật tiêu đề tương ứng rạp
         document.getElementById('currentScreenTitle').innerText = screenKey.toUpperCase();
-        document.getElementById('exitLeft').style.display = currentScreen.exit === 'left' ? 'block' : 'none';
-        document.getElementById('exitRight').style.display = currentScreen.exit === 'right' ? 'block' : 'none';
 
         const mapContainer = document.getElementById('seatingMap');
         mapContainer.innerHTML = '';
         
+        // 1. Tạo màn hình chiếu bên trong bản đồ ghế để đồng bộ tỷ lệ và cuộn/zoom
+        const screenContainer = document.createElement('div');
+        screenContainer.className = 'screen-container';
+        
+        const exitLeft = document.createElement('div');
+        exitLeft.id = 'exitLeft';
+        exitLeft.className = 'exit-indicator exit-left';
+        exitLeft.innerText = 'EXIT';
+        exitLeft.style.display = currentScreen.exit === 'left' ? 'block' : 'none';
+        
+        const screenDiv = document.createElement('div');
+        screenDiv.className = 'screen';
+        screenDiv.innerText = 'MÀN HÌNH';
+        
+        const exitRight = document.createElement('div');
+        exitRight.id = 'exitRight';
+        exitRight.className = 'exit-indicator exit-right';
+        exitRight.innerText = 'EXIT';
+        exitRight.style.display = currentScreen.exit === 'right' ? 'block' : 'none';
+        
+        screenContainer.appendChild(exitLeft);
+        screenContainer.appendChild(screenDiv);
+        screenContainer.appendChild(exitRight);
+        mapContainer.appendChild(screenContainer);
+
+        // 2. Tạo các hàng ghế
         currentScreen.rows.forEach(config => {
             const rowDiv = document.createElement('div');
             rowDiv.className = 'seat-row';
@@ -908,6 +957,7 @@
                 seat.setAttribute('data-seatid', seatId);
                 seat.setAttribute('data-type', config.type);
                 
+                // Event click / drag trên desktop
                 seat.onmousedown = function(e) {
                     e.preventDefault(); // Ngăn trình duyệt bôi đen văn bản
                     isMouseDown = true;
@@ -942,6 +992,23 @@
                         }
                     }
                 };
+
+                // Hỗ trợ chọn/kéo chạm trên di động (Mobile Touch Drag)
+                seat.addEventListener('touchstart', function(e) {
+                    e.preventDefault(); // Khóa cuộn trang khi đang kéo chọn ghế
+                    isMouseDown = true;
+                    if (selectedSeats.has(seatId)) {
+                        dragSelectMode = false;
+                        selectedSeats.delete(seatId);
+                        seat.classList.remove('selected');
+                    } else {
+                        dragSelectMode = true;
+                        const defaultType = document.getElementById('ticketType').value;
+                        selectedSeats.set(seatId, defaultType);
+                        seat.classList.add('selected');
+                    }
+                    updatePrice();
+                }, { passive: false });
                 
                 rowDiv.appendChild(seat);
             }
@@ -954,7 +1021,41 @@
             mapContainer.appendChild(rowDiv);
         });
 
+        // 3. Lắng nghe hành vi kéo di chuyển (touchmove) trên bản đồ ghế để chọn hàng loạt trên di động
+        mapContainer.addEventListener('touchmove', function(e) {
+            if (!isMouseDown) return;
+            e.preventDefault(); // Ngăn cuộn màn hình khi đang thực hiện chọn kéo
+            const touch = e.touches[0];
+            const el = document.elementFromPoint(touch.clientX, touch.clientY);
+            if (el && el.classList.contains('seat')) {
+                const sId = el.getAttribute('data-seatid');
+                if (sId) {
+                    if (dragSelectMode) {
+                        if (!selectedSeats.has(sId)) {
+                            const defaultType = document.getElementById('ticketType').value;
+                            selectedSeats.set(sId, defaultType);
+                            el.classList.add('selected');
+                            updatePrice();
+                        }
+                    } else {
+                        if (selectedSeats.has(sId)) {
+                            selectedSeats.delete(sId);
+                            el.classList.remove('selected');
+                            updatePrice();
+                        }
+                    }
+                }
+            }
+        }, { passive: false });
+
+        mapContainer.addEventListener('touchend', function() {
+            isMouseDown = false;
+        });
+
         updatePrice();
+        
+        // Tự động scale vừa màn hình di động sau khi render
+        setTimeout(scaleSeatingMap, 50);
     }
 
     function calculateBasePrice(day, slot, type) {
