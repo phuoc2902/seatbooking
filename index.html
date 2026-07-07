@@ -1262,7 +1262,7 @@
         
         document.getElementById('modalMovieName').innerText = movieName.toUpperCase();
         document.getElementById('modalScreenName').innerText = screenKey;
-        document.getElementById('modalShowtime').innerText = `${showtimeHour} - ${dayText.split(' ')[0]}`;
+        document.getElementById('modalShowtime').innerText = `${showtimeHour} - ${dayText.split('(')[0].trim()}`;
         document.getElementById('modalSeats').innerText = selectedSeatsText;
         
         let totalBasePrice = 0;
@@ -1334,9 +1334,9 @@
             
             // Vẽ lớp kính mờ (glassmorphism panel) ở phần dưới
             const panelW = w * 0.8;
-            const panelH = h * 0.58;
+            const panelH = h * 0.60;
             const panelX = (w - panelW) / 2;
-            const panelY = h * 0.35;
+            const panelY = h * 0.33;
             
             ctx.fillStyle = "rgba(0, 0, 0, 0.85)";
             ctx.beginPath();
@@ -1352,14 +1352,14 @@
             // Tiêu đề
             ctx.fillStyle = '#00ff66';
             ctx.font = 'bold ' + Math.round(h * 0.045) + 'px "Segoe UI", Arial, sans-serif';
-            ctx.fillText('VÉ XEM PHIM / RECEIPT', w / 2, panelY + h * 0.04);
+            ctx.fillText('VÉ XEM PHIM / RECEIPT', w / 2, panelY + h * 0.035);
             
             // Đường phân cách 1
             ctx.strokeStyle = 'rgba(255, 255, 255, 0.15)';
             ctx.lineWidth = 2;
             ctx.beginPath();
-            ctx.moveTo(panelX + 50, panelY + h * 0.10);
-            ctx.lineTo(panelX + panelW - 50, panelY + h * 0.10);
+            ctx.moveTo(panelX + 50, panelY + h * 0.09);
+            ctx.lineTo(panelX + panelW - 50, panelY + h * 0.09);
             ctx.stroke();
             
             // Vẽ lưới thông tin (Grid)
@@ -1381,30 +1381,30 @@
             const valueFont = 'bold ' + Math.round(h * 0.028) + 'px "Segoe UI", Arial, sans-serif';
             
             // Vẽ PHIM / MOVIE
-            const movieText = document.getElementById('modalMovieName').innerText;
+            const movieText = document.getElementById('modalMovieName').innerText || 'CHƯA CHỌN PHIM';
             ctx.fillStyle = '#a0aec0';
             ctx.font = labelFont;
-            ctx.fillText('PHIM / MOVIE', col1X, panelY + h * 0.12);
+            ctx.fillText('PHIM / MOVIE', col1X, panelY + h * 0.11);
             ctx.fillStyle = '#00ff66';
             ctx.font = 'bold ' + Math.round(h * 0.032) + 'px "Segoe UI", Arial, sans-serif';
-            ctx.fillText(movieText, col1X, panelY + h * 0.15);
+            ctx.fillText(movieText, col1X, panelY + h * 0.14);
             
             // Vẽ Rạp và Suất chiếu
             ctx.fillStyle = '#a0aec0';
             ctx.font = labelFont;
-            ctx.fillText('RẠP / CINEMA', col1X, panelY + h * 0.20);
-            ctx.fillText('SUẤT CHIẾU / SHOWTIME', col2X, panelY + h * 0.20);
+            ctx.fillText('RẠP / CINEMA', col1X, panelY + h * 0.19);
+            ctx.fillText('SUẤT CHIẾU / SHOWTIME', col2X, panelY + h * 0.19);
             
             ctx.fillStyle = '#ffffff';
             ctx.font = valueFont;
-            ctx.fillText(screenText, col1X, panelY + h * 0.23);
-            ctx.fillText(showtimeText, col2X, panelY + h * 0.23);
+            ctx.fillText(screenText, col1X, panelY + h * 0.22);
+            ctx.fillText(showtimeText, col2X, panelY + h * 0.22);
             
             // Vẽ Ghế và Đối tượng
             ctx.fillStyle = '#a0aec0';
             ctx.font = labelFont;
-            ctx.fillText('GHẾ / SEATS', col1X, panelY + h * 0.28);
-            ctx.fillText('ĐỐI TƯỢNG / TYPE', col2X, panelY + h * 0.28);
+            ctx.fillText('GHẾ / SEATS', col1X, panelY + h * 0.27);
+            ctx.fillText('ĐỐI TƯỢNG / TYPE', col2X, panelY + h * 0.27);
             
             ctx.fillStyle = '#ffffff';
             ctx.font = valueFont;
@@ -1412,49 +1412,49 @@
             if(seatsTruncated.length > 30) {
                 seatsTruncated = seatsTruncated.substring(0, 27) + '...';
             }
-            ctx.fillText(seatsTruncated, col1X, panelY + h * 0.31);
-            ctx.fillText(typeText, col2X, panelY + h * 0.31);
+            ctx.fillText(seatsTruncated, col1X, panelY + h * 0.30);
+            ctx.fillText(typeText, col2X, panelY + h * 0.30);
             
             // Đường phân cách 2
             ctx.strokeStyle = 'rgba(255, 255, 255, 0.15)';
             ctx.beginPath();
-            ctx.moveTo(panelX + 50, panelY + h * 0.36);
-            ctx.lineTo(panelX + panelW - 50, panelY + h * 0.36);
+            ctx.moveTo(panelX + 50, panelY + h * 0.35);
+            ctx.lineTo(panelX + panelW - 50, panelY + h * 0.35);
             ctx.stroke();
             
             // Chi tiết giá
             ctx.fillStyle = '#cccccc';
             ctx.font = 'bold ' + Math.round(h * 0.024) + 'px "Segoe UI", Arial, sans-serif';
             
-            ctx.fillText(`Giá vé cơ bản (x${ticketCount}):`, col1X, panelY + h * 0.38);
-            ctx.fillText('Phụ thu loại ghế:', col1X, panelY + h * 0.41);
-            ctx.fillText('Phụ thu dịch vụ (3D/Lễ):', col1X, panelY + h * 0.44);
+            ctx.fillText(`Giá vé cơ bản (x${ticketCount}):`, col1X, panelY + h * 0.37);
+            ctx.fillText('Phụ thu loại ghế:', col1X, panelY + h * 0.40);
+            ctx.fillText('Phụ thu dịch vụ (3D/Lễ):', col1X, panelY + h * 0.43);
             
             ctx.textAlign = 'right';
             const priceColX = panelX + panelW - w * 0.06;
-            ctx.fillText(basePrice, priceColX, panelY + h * 0.38);
-            ctx.fillText(seatSurcharge, priceColX, panelY + h * 0.41);
-            ctx.fillText(addonSurcharge, priceColX, panelY + h * 0.44);
+            ctx.fillText(basePrice, priceColX, panelY + h * 0.37);
+            ctx.fillText(seatSurcharge, priceColX, panelY + h * 0.40);
+            ctx.fillText(addonSurcharge, priceColX, panelY + h * 0.43);
             
             // Đường phân cách 3
             ctx.strokeStyle = 'rgba(255, 255, 255, 0.15)';
             ctx.beginPath();
-            ctx.moveTo(panelX + 50, panelY + h * 0.48);
-            ctx.lineTo(panelX + panelW - 50, panelY + h * 0.48);
+            ctx.moveTo(panelX + 50, panelY + h * 0.47);
+            ctx.lineTo(panelX + panelW - 50, panelY + h * 0.47);
             ctx.stroke();
             
             // Tổng tiền
             ctx.textAlign = 'left';
             ctx.fillStyle = '#00ff66';
             ctx.font = 'bold ' + Math.round(h * 0.034) + 'px "Segoe UI", Arial, sans-serif';
-            ctx.fillText('TỔNG TIỀN / TOTAL:', col1X, panelY + h * 0.505);
+            ctx.fillText('TỔNG TIỀN / TOTAL:', col1X, panelY + h * 0.495);
             
             ctx.textAlign = 'right';
-            ctx.fillText(totalPrice, priceColX, panelY + h * 0.505);
+            ctx.fillText(totalPrice, priceColX, panelY + h * 0.495);
             
             // Barcode
             const barcodeX = w / 2 - 150;
-            const barcodeY = panelY + h * 0.55;
+            const barcodeY = panelY + h * 0.535;
             ctx.fillStyle = '#ffffff';
             ctx.fillRect(barcodeX, barcodeY, 300, 20);
             
